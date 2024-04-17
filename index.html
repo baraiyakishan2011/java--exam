@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>java-exam</title>
+    <style>
+        table {
+            width: 30%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid;
+            padding: 8px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+        }
+    </style>
+</head>
+<body>
+
+    <label for="fname">First Name:</label>
+    <input type="text" id="fname"><br><br>
+
+    <label for="lname">Last Name:</label>
+    <input type="text" id="lname"><br><br>
+
+    <button onclick="saveData()">Save</button>
+    <button onclick="clearData()">Clear</button><br><br>
+
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Delete Data</th>
+                <th>Update Data</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+        </tbody>
+    </table>
+
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <span onclick="closeUpdateModal()" style="float: right; cursor: pointer;">&times;</span>
+            <label for="updateFname">Update First Name:</label>
+            <input type="text" id="updateFname"><br><br>
+
+            <label for="updateLname">Update Last Name:</label>
+            <input type="text" id="updateLname"><br><br>
+
+            <button onclick="updateData()">Update</button>
+        </div>
+    </div>
+
+    <script>
+        let data = JSON.parse(localStorage.getItem("data")) || [];
+
+        function saveData() {
+            let fname = document.getElementById("fname").value;
+            let lname = document.getElementById("lname").value;
+
+            const add = {
+                firstName: fname,
+                lastName: lname,
+            };
+
+            data.push(add);
+
+            localStorage.setItem("data", JSON.stringify(data));
+
+            document.getElementById("fname").value = "";
+            document.getElementById("lname").value = "";
+
+            updateTable();
+        }
+
+        function deleteEntry(index) {
+            data.splice(index, 1);
+            localStorage.setItem("data", JSON.stringify(data));
+            updateTable();
+        }
+
+        function clearData() {
+            data = [];
+            localStorage.removeItem("data");
+            updateTable();
+        }
+
+        function openUpdateModal(index) {
+            const modal = document.getElementById("updateModal");
+            modal.style.display = "block";
+
+    
+            document.getElementById("updateFname").value = data[index].firstName;
+            document.getElementById("updateLname").value = data[index].lastName;
+
+            modal.dataset.index = index;
+        }
+
+        function closeUpdateModal() {
+            document.getElementById("updateModal").style.display = "none";
+        }
+
+        function updateData() {
+            const modal = document.getElementById("updateModal");
+            const index = modal.dataset.index;
+
+            data[index].firstName = document.getElementById("updateFname").value;
+            data[index].lastName = document.getElementById("updateLname").value;
+
+            localStorage.setItem("data", JSON.stringify(data));
+
+        
+            closeUpdateModal();
+
+         
+            updateTable();
+        }
+
+        function updateTable() {
+            const tableBody = document.getElementById("table-body");
+            tableBody.innerHTML = "";
+
+            data.forEach((add, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${index}</td>
+                    <td>${add.firstName}</td>
+                    <td>${add.lastName}</td>
+                    <td><button onclick="deleteEntry(${index})">Delete</button></td>
+                    <td><button onclick="openUpdateModal(${index})">Update</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        updateTable();
+    </script>
+</body>
+</html>
